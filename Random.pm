@@ -1,5 +1,5 @@
 # String::Random - Generates a random string from a pattern
-# Copyright (C) 1998 Steven Pritchard <steve@silug.org>
+# Copyright (C) 1999 Steven Pritchard <steve@silug.org>
 #
 # This program is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
@@ -7,6 +7,8 @@
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# $Id: Random.pm,v 1.2 1999/07/05 03:25:30 steve Exp $
 
 package String::Random;
 
@@ -17,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.1';
+$VERSION = '0.19';
 
 use Carp;
 
@@ -40,7 +42,12 @@ push(@punct, "#", ","); # To avoid warnings when using -w
 	      'n' => \@digit,
 	      '!' => \@punct,
 	      '.' => \@any,
-	      's' => \@salt );
+	      's' => \@salt,
+	      "\\d" => \@digit,
+	      "\\D" => [@upper, @lower, @punct],
+	      "\\w" => [@upper, @lower, @digit, "_"],
+	      "\\W" => \@punct
+	    );
 
 sub new
 {
@@ -49,6 +56,82 @@ sub new
     my $self;
     %{$self}=%patterns; # makes $self a reference to a *copy* of %patterns
     return bless($self, $class);
+}
+
+sub from_regex
+{
+    my $self=shift;
+    croak "called without a reference" if (!ref($self));
+
+    my ($ch, @string, $string);
+
+    my $pattern=shift;
+    print STDERR "\$pattern=\"$pattern\"\n"; # Debugging.
+    my @chars=split(//, $pattern);
+
+    while ($ch=shift(@chars))
+    {
+        print STDERR "\$ch=\"$ch\"\n"; # Debugging.
+	if ($ch eq "\\")
+	{
+	    if (@chars)
+	    {
+	        my $tmp=shift(@chars);
+                print STDERR "\$tmp=\"$tmp\"\n"; # Debugging.
+		if ($tmp=~/[A-CE-VX-Za-ce-vyz89]/)
+		{
+		    carp "'\\$tmp' being treated as literal '$tmp'";
+		    push(@string, [$tmp]);
+		}
+		elsif ($tmp=~/[DWdw]/)
+		{
+		    $ch.=$tmp;
+		    push(@string, $self->{$ch});
+		}
+		elsif ($tmp eq "x")
+		{
+		    # This is supposed to be a number in hex, so
+		    # there had better be at least 2 characters left.
+		    $tmp=shift(@chars) . shift(@chars);
+		    push(@string, [chr(hex($tmp))]);
+		}
+		elsif ($tmp=~/[0-7]/)
+		{
+		    carp "octal parsing not implemented.  treating literally.";
+		    push(@string, [$tmp]);
+		}
+		else
+		{
+		    push(@string, [$tmp]);
+		}
+	    }
+	    else
+	    {
+		croak "regex not terminated";
+	    }
+	}
+	elsif ($ch eq ".")
+	{
+	    push(@string, $self->{$ch});
+	}
+	elsif ($ch=~/[\$\^\*\(\)\+\{\}\[\]\|\?]/)
+	{
+	    carp "'$ch' not implemented.  treating literally.";
+	    push(@string, [$ch]);
+	}
+	else
+	{
+	    push(@string, [$ch]);
+	}
+        print STDERR "\@string=\"@{[map { @{$_} } @string]}\"\n"; # Debugging.
+    }
+
+    foreach $ch (@string)
+    {
+	$string.=$ch->[int(rand(scalar(@{$ch})))];
+    }
+
+    return $string;
 }
 
 sub from_pattern
