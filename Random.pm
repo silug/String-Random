@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.5 1999/07/05 15:42:28 steve Exp $
+# $Id: Random.pm,v 1.6 1999/07/06 22:51:05 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.193';
+$VERSION = '0.194';
 
 use Carp;
 
@@ -58,6 +58,11 @@ sub new
     return bless($self, $class);
 }
 
+# Returns a random string based on a regular expression.
+# In theory, it should return a list of random strings if
+# passed a list of regular expressions, at least in a list
+# context.  In a scalar context, it should probably return
+# a single string, "@return_list" perhaps?
 sub randregex
 {
     my $self=shift;
@@ -67,12 +72,16 @@ sub randregex
 
     my $pattern=shift;
     #print STDERR "\$pattern=\"$pattern\"\n"; # Debugging.
+
+    # Split the characters in the pattern
+    # up into a list for easier parsing.
     my @chars=split(//, $pattern);
 
     while ($ch=shift(@chars))
     {
         #print STDERR "\$ch=\"$ch\"\n"; # Debugging.
-	if ($ch eq "\\")
+
+	if ($ch eq "\\") # First we special-case out backslash.
 	{
 	    if (@chars)
 	    {
@@ -110,19 +119,30 @@ sub randregex
 		croak "regex not terminated";
 	    }
 	}
-	elsif ($ch eq ".")
+	elsif ($ch eq ".") # We treat "." as "any printable character".
 	{
 	    push(@string, $self->{$ch});
 	}
-	elsif ($ch eq "[")
+	elsif ($ch eq "[") # Character classes.
 	{
 	    my @tmp;
 	    while (defined($ch=shift(@chars)) && ($ch ne "]"))
 	    {
 		#print STDERR "\$ch=\"$ch\"\n"; # Debugging
-		carp "'$ch' will be treated literally inside []"
-		    if ($ch=~/[^\w]/);
-		push(@tmp, $ch);
+		if (($ch eq "-") && @chars && @tmp)
+		{
+		    $ch=shift(@chars);
+		    for (my $n=ord($tmp[$#tmp]);$n<ord($ch);$n++)
+		    {
+			push(@tmp, chr($n+1));
+		    }
+		}
+		else
+		{
+		    carp "'$ch' will be treated literally inside []"
+		        if ($ch=~/\W/);
+		    push(@tmp, $ch);
+		}
 		#print STDERR "\@tmp=\"@tmp\"\n"; # Debugging
 	    }
 	    croak "unmatched []" if ($ch ne "]");
@@ -130,6 +150,7 @@ sub randregex
 	}
 	elsif ($ch=~/[\$\^\*\(\)\+\{\}\]\|\?]/)
 	{
+            # At least some of these probably should have special meaning.
 	    carp "'$ch' not implemented.  treating literally.";
 	    push(@string, [$ch]);
 	}
@@ -150,6 +171,9 @@ sub randregex
 
 sub from_pattern
 {
+    my $self=shift;
+    croak "called without a reference" if (!ref($self));
+
     return $self->randpattern(@_);
 }
 
@@ -286,7 +310,8 @@ supported:
   \D    Printable characters other than those in \d.
 
 Regular expression support is still very experimental.  Currently special
-characters inside [] are not supported.
+characters inside [] are not supported (with the exception of "-" to denote
+ranges of characters).
 
 =back
 
