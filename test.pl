@@ -110,10 +110,10 @@ print "ok 10\n";
 
 # 11: Test regex support
 @patterns=('\d\d\d', '\w\w\w', '[ABC][abc]', '[012][345]', '...', '[a-z][0-9]',
-           '[aw-zX][123]');
+           '[aw-zX][123]', '[a-z]{5}');
 for (@patterns)
 {
-    if ($foo->randregex($_)!~/$_/)
+    if ($foo->randregex($_)!~/^$_$/)
     {
 	$failed11++;
 	print "'$_' failed.\n" if ($ENV{VERBOSE});

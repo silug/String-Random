@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.6 1999/07/06 22:51:05 steve Exp $
+# $Id: Random.pm,v 1.7 1999/07/08 01:11:18 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.194';
+$VERSION = '0.195';
 
 use Carp;
 
@@ -147,6 +147,38 @@ sub randregex
 	    }
 	    croak "unmatched []" if ($ch ne "]");
 	    push(@string, \@tmp);
+	}
+	elsif ($ch eq "{") # Repetition.
+	{
+	    my($n, $closed);
+	    for ($n=0;$n<scalar(@chars);$n++)
+	    {
+		if ($chars[$n] eq "}")
+		{
+		    $closed++;
+		    last;
+		}
+	    }
+	    if ($closed)
+	    {
+	        my $tmp;
+	        while (defined($ch=shift(@chars)) && ($ch ne "}"))
+	        {
+		    croak "'$ch' inside {} not supported" if ($ch!~/\d/);
+		    $tmp.=$ch;
+	        }
+		croak "number inside {} must be positive" if ($tmp<1);
+		my $last=$string[$#string];
+		for ($n=0;$n<($tmp-1);$n++)
+		{
+		    push(@string, $last);
+		}
+	    }
+	    else
+	    {
+		# { isn't closed, so treat it literally.
+		push(@string, [$ch]);
+	    }
 	}
 	elsif ($ch=~/[\$\^\*\(\)\+\{\}\]\|\?]/)
 	{
