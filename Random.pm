@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.17 2003/09/29 19:34:23 steve Exp $
+# $Id: Random.pm,v 1.18 2003/09/29 20:33:02 steve Exp $
 
 package String::Random;
 
@@ -97,15 +97,6 @@ use vars qw(%old_patterns %patterns %regch);
                        carp "'\\$tmp' being treated as literal '$tmp'";
                        push(@{$string}, [$tmp]);
                    }
-
-		   # I originally had a fall-through to this.  It looks bogus,
-		   # since all cases should have been caught above.  If nothing
-		   # obvious breaks in the next version, I'll remove it.
-		   #
-                   #else
-                   #{
-                   #    push(@{$string}, [$tmp]);
-                   #}
                }
                else
                {
@@ -415,15 +406,23 @@ for adding patterns.
 
 =over 8
 
+=item new
+
+=item new max =E<gt> I<number>
+
+Create a new String::Random object.
+
+Optionally a parameter C<max> can be included to specify the maximum number
+of characters to return for C<*> and other regular expression patters that
+don't return a fixed number of characters.
+
 =item randpattern LIST
 
 The randpattern method returns a random string based on the concatenation
 of all the pattern strings in the list.
 
-Please note that in a future revision, it will return a list of random
-strings corresponding to the pattern strings when used in list context.  In
-other words, using this method in a list context is currently not
-recommended.
+It will return a list of random strings corresponding to the pattern
+strings when used in list context.
 
 =item randregex LIST
 
@@ -435,14 +434,18 @@ expressions.  Only a small subset of regular expression syntax is actually
 supported.  So far, the following regular expression elements are
 supported:
 
-  []    Character classes
-  {}    Repetition
   \w    Alphanumeric + "_".
   \d    Digits.
   \W    Printable characters other than those in \w.
   \D    Printable characters other than those in \d.
+  .     Printable characters.
+  []    Character classes.
+  {}    Repetition.
+  *     Same as {0,}.
+  ?     Same as {0,1}.
+  +     Same as {1,}.
 
-Regular expression support is still very experimental.  Currently special
+Regular expression support is still somewhat incomplete.  Currently special
 characters inside [] are not supported (with the exception of "-" to denote
 ranges of characters).  The parser doesn't care for spaces in the "regular
 expression" either.
