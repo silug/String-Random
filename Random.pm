@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.15 2003/09/29 17:34:11 steve Exp $
+# $Id: Random.pm,v 1.16 2003/09/29 17:52:57 steve Exp $
 
 package String::Random;
 
@@ -224,13 +224,11 @@ sub new
     my $class=ref($proto) || $proto;
     my $self;
     $self={ %old_patterns }; # makes $self refer to a copy of %old_patterns
-    if (@_)
-    {
-        my %args=@_;
-	$self->{'_max'}=$args{'max'} if (defined($args{'max'}));
-    }
-    else
-    {
+    my %args=();
+    %args=@_ if (@_);
+    if (defined($args{'max'})) {
+        $self->{'_max'}=$args{'max'};
+    } else {
         $self->{'_max'}=10;
     }
     return bless($self, $class);
@@ -488,3 +486,4 @@ Steven Pritchard <steve@silug.org>
 perl(1).
 
 =cut
+# vi: set ai et:
