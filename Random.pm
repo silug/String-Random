@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.3 1999/07/05 15:11:53 steve Exp $
+# $Id: Random.pm,v 1.4 1999/07/05 15:13:15 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.191';
+$VERSION = '0.192';
 
 use Carp;
 
@@ -128,7 +128,7 @@ sub from_regex
 	    croak "unmatched []" if ($ch ne "]");
 	    push(@string, \@tmp);
 	}
-	elsif ($ch=~/[\$\^\*\(\)\+\{\}\[\]\|\?]/)
+	elsif ($ch=~/[\$\^\*\(\)\+\{\}\]\|\?]/)
 	{
 	    carp "'$ch' not implemented.  treating literally.";
 	    push(@string, [$ch]);
