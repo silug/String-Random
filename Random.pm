@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.2 1999/07/05 03:25:30 steve Exp $
+# $Id: Random.pm,v 1.3 1999/07/05 15:11:53 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.19';
+$VERSION = '0.191';
 
 use Carp;
 
@@ -66,18 +66,18 @@ sub from_regex
     my ($ch, @string, $string);
 
     my $pattern=shift;
-    print STDERR "\$pattern=\"$pattern\"\n"; # Debugging.
+    #print STDERR "\$pattern=\"$pattern\"\n"; # Debugging.
     my @chars=split(//, $pattern);
 
     while ($ch=shift(@chars))
     {
-        print STDERR "\$ch=\"$ch\"\n"; # Debugging.
+        #print STDERR "\$ch=\"$ch\"\n"; # Debugging.
 	if ($ch eq "\\")
 	{
 	    if (@chars)
 	    {
 	        my $tmp=shift(@chars);
-                print STDERR "\$tmp=\"$tmp\"\n"; # Debugging.
+                #print STDERR "\$tmp=\"$tmp\"\n"; # Debugging.
 		if ($tmp=~/[A-CE-VX-Za-ce-vyz89]/)
 		{
 		    carp "'\\$tmp' being treated as literal '$tmp'";
@@ -114,6 +114,20 @@ sub from_regex
 	{
 	    push(@string, $self->{$ch});
 	}
+	elsif ($ch eq "[")
+	{
+	    my @tmp;
+	    while (defined($ch=shift(@chars)) && ($ch ne "]"))
+	    {
+		#print STDERR "\$ch=\"$ch\"\n"; # Debugging
+		carp "'$ch' will be treated literally inside []"
+		    if ($ch=~/[^\w]/);
+		push(@tmp, $ch);
+		#print STDERR "\@tmp=\"@tmp\"\n"; # Debugging
+	    }
+	    croak "unmatched []" if ($ch ne "]");
+	    push(@string, \@tmp);
+	}
 	elsif ($ch=~/[\$\^\*\(\)\+\{\}\[\]\|\?]/)
 	{
 	    carp "'$ch' not implemented.  treating literally.";
@@ -123,7 +137,7 @@ sub from_regex
 	{
 	    push(@string, [$ch]);
 	}
-        print STDERR "\@string=\"@{[map { @{$_} } @string]}\"\n"; # Debugging.
+        #print STDERR "\@string=\"@{[map { @{$_} } @string]}\"\n"; # Debugging.
     }
 
     foreach $ch (@string)
