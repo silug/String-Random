@@ -1,5 +1,5 @@
 FEATURES:
-* (foo|bar) should be doable.
+* (foo|bar) should be doable.  (Maybe use recursion?)
 * {$n,$m} should be doable too.
 * If there was a variable, maybe $MAX_REPETITION, * could be
   implemented as {0,$MAX_REPETITION}, and + could be implemented as
@@ -11,6 +11,6 @@ FEATURES:
 
 BUGS:
 * All functions should do the right then when called in a list or
-  scalar context.
+  scalar context. _FIXED_
 * All functions should do the right then when passed either a list or
-  a scalar (see last item).
+  a scalar (see last item). _FIXED_

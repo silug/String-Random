@@ -1,5 +1,5 @@
 # String::Random - Generates a random string from a pattern
-# Copyright (C) 1999 Steven Pritchard <steve@silug.org>
+# Copyright (C) 1999,2000 Steven Pritchard <steve@silug.org>
 #
 # This program is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.10 2000/05/16 16:23:42 steve Exp $
+# $Id: Random.pm,v 1.11 2002/02/26 19:59:08 steve Exp $
 
 package String::Random;
 
@@ -19,47 +19,52 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string random_regex);
-$VERSION = '0.198';
+$VERSION = '0.199';
 
 use Carp;
 
-use vars qw(@upper @lower @digit @punct @any @salt %patterns %regch);
+use vars qw(@upper @lower @digit @punct @any @salt);
+use vars qw(%old_patterns %patterns %regch);
 
 # These are the various character sets.
 @upper=("A".."Z");
 @lower=("a".."z");
 @digit=("0".."9");
 @punct=qw x~ ` ! @ $ % ^ & * ( ) - _ + = { } [ ] | \ : ; " ' . < > ? /x;
-push(@punct, "#", ","); # To avoid warnings when using -w
+push(@punct, "#", ","); # Quoted to avoid warnings when using -w
 @any=(@upper, @lower, @digit, @punct);
 @salt=(@upper, @lower, @digit, ".", "/");
 
 # What's important is how they relate to the pattern characters.
+# These are the old patterns for randpattern/random_string.
+%old_patterns = (
+    'C' => [ @upper ],
+    'c' => [ @lower ],
+    'n' => [ @digit ],
+    '!' => [ @punct ],
+    '.' => [ @any ],
+    's' => [ @salt ],
+);
+
+# These are the regex-based patterns.
 %patterns = (
-	      # These are the old patterns for randpattern/random_string.
-	      'C' => [ @upper ],
-              'c' => [ @lower ],
-              'n' => [ @digit ],
-              '!' => [ @punct ],
-              '.' => [ @any ],
-              's' => [ @salt ],
+    # These are the regex-equivalents.
+    '.' => [ @any ],
+    '\d' => [ @digit ],
+    '\D' => [ @upper, @lower, @punct ],
+    '\w' => [ @upper, @lower, @digit, "_" ],
+    '\W' => [ grep { $_ ne "_" } @punct ],
+    '\s' => [ " ", "\t" ], # Would anything else make sense?
+    '\S' => [ @upper, @lower, @digit, @punct ],
 
-	      # These are the regex-equivalents.
-              '\d' => [ @digit ],
-              '\D' => [ @upper, @lower, @punct ],
-              '\w' => [ @upper, @lower, @digit, "_" ],
-              '\W' => [ grep { $_ ne "_" } @punct ],
-              '\s' => [ " ", "\t" ], # Would anything else make sense?
-              '\S' => [ @upper, @lower, @digit, @punct ],
-
-	      # These are translated to their double quoted equivalents.
-	      '\t' => [ "\t" ],
-	      '\n' => [ "\n" ],
-	      '\r' => [ "\r" ],
-	      '\f' => [ "\f" ],
-	      '\a' => [ "\a" ],
-	      '\e' => [ "\e" ],
-            );
+    # These are translated to their double quoted equivalents.
+    '\t' => [ "\t" ],
+    '\n' => [ "\n" ],
+    '\r' => [ "\r" ],
+    '\f' => [ "\f" ],
+    '\a' => [ "\a" ],
+    '\e' => [ "\e" ],
+);
 
 # These characters are treated specially in randregex().
 %regch = (
@@ -69,7 +74,6 @@ push(@punct, "#", ","); # To avoid warnings when using -w
                if (@{$chars})
                {
                    my $tmp=shift(@{$chars});
-                   #print STDERR "\$tmp=\"$tmp\"\n"; # Debugging.
                    if ($tmp eq "x")
                    {
                        # This is supposed to be a number in hex, so
@@ -85,7 +89,7 @@ push(@punct, "#", ","); # To avoid warnings when using -w
                    elsif (defined($patterns{"\\$tmp"}))
                    {
                        $ch.=$tmp;
-                       push(@{$string}, $self->{$ch});
+                       push(@{$string}, $patterns{$ch});
                    }
                    else
                    {
@@ -110,7 +114,7 @@ push(@punct, "#", ","); # To avoid warnings when using -w
     '.' => sub
            {
                my ($self, $ch, $chars, $string)=@_;
-	       push(@{$string}, $self->{$ch});
+	       push(@{$string}, $patterns{$ch});
            },
     '[' => sub
            {
@@ -118,7 +122,6 @@ push(@punct, "#", ","); # To avoid warnings when using -w
                my @tmp;
                while (defined($ch=shift(@{$chars})) && ($ch ne "]"))
                {
-                   #print STDERR "\$ch=\"$ch\"\n"; # Debugging
                    if (($ch eq "-") && @{$chars} && @tmp)
                    {
                        $ch=shift(@{$chars});
@@ -133,7 +136,6 @@ push(@punct, "#", ","); # To avoid warnings when using -w
                            if ($ch=~/\W/);
                        push(@tmp, $ch);
                    }
-                   #print STDERR "\@tmp=\"@tmp\"\n"; # Debugging
                }
                croak "unmatched []" if ($ch ne "]");
                push(@{$string}, \@tmp);
@@ -178,58 +180,57 @@ sub new
     my $proto=shift;
     my $class=ref($proto) || $proto;
     my $self;
-    %{$self}=%patterns; # makes $self a reference to a *copy* of %patterns
+    $self={ %old_patterns }; # makes $self refer to a copy of %old_patterns
     return bless($self, $class);
 }
 
-# Returns a random string based on a regular expression.
-# In theory, it should return a list of random strings if
-# passed a list of regular expressions, at least in a list
-# context.  In a scalar context, it should probably return
-# a single string, "@return_list" perhaps?
+# Returns a random string for each regular expression given as an
+# argument, or the strings concatenated when used in a scalar context.
 sub randregex
 {
     my $self=shift;
     croak "called without a reference" if (!ref($self));
 
-    my ($ch, @string, $string);
+    my @strings;
 
-    my $pattern=shift;
-    #print STDERR "\$pattern=\"$pattern\"\n"; # Debugging.
-
-    # Split the characters in the pattern
-    # up into a list for easier parsing.
-    my @chars=split(//, $pattern);
-
-    while (defined($ch=shift(@chars)))
+    while (my $pattern=shift)
     {
-        #print STDERR "\$ch=\"$ch\"\n"; # Debugging.
+        my ($ch, @string, $string);
 
-        if (defined($regch{$ch}))
-	{
-	    $regch{$ch}->($self, $ch, \@chars, \@string);
-	}
-        elsif ($ch=~/[\$\^\*\(\)\+\{\}\]\|\?]/)
+        # Split the characters in the pattern
+        # up into a list for easier parsing.
+        my @chars=split(//, $pattern);
+
+        while (defined($ch=shift(@chars)))
         {
-            # At least some of these probably should have special meaning.
-            carp "'$ch' not implemented.  treating literally.";
-            push(@string, [$ch]);
+            if (defined($regch{$ch}))
+	    {
+	        $regch{$ch}->($self, $ch, \@chars, \@string);
+	    }
+            elsif ($ch=~/[\$\^\*\(\)\+\{\}\]\|\?]/)
+            {
+                # At least some of these probably should have special meaning.
+                carp "'$ch' not implemented.  treating literally.";
+                push(@string, [$ch]);
+            }
+            else
+            {
+                push(@string, [$ch]);
+            }
         }
-        else
+
+        foreach $ch (@string)
         {
-            push(@string, [$ch]);
+            $string.=$ch->[int(rand(scalar(@{$ch})))];
         }
-        #print STDERR "\@string=\"@{[map { @{$_} } @string]}\"\n"; # Debugging.
+
+	push(@strings, $string);
     }
 
-    foreach $ch (@string)
-    {
-        $string.=$ch->[int(rand(scalar(@{$ch})))];
-    }
-
-    return $string;
+    return wantarray ? @strings : join("", @strings);
 }
 
+# For compatibility with an ancient version, please ignore...
 sub from_pattern
 {
     my $self=shift;
@@ -243,25 +244,27 @@ sub randpattern
     my $self=shift;
     croak "called without a reference" if (!ref($self));
 
-    my $string;
+    my @strings;
 
-LOOP:
-    my $pattern=shift;
-
-    foreach (split(//, $pattern))
+    while (my $pattern=shift)
     {
-        if (defined($self->{$_}))
-        {
-            $string.=$self->{$_}->[int(rand(scalar(@{$self->{$_}})))];
-        }
-        else
-        {
-            croak qq(Unknown pattern character "$_"!);
-        }
-    }
-    goto LOOP if (@_); # Note that this was added as an afterthought, sorry.
+        my $string;
 
-    return $string;
+        for my $ch (split(//, $pattern))
+        {
+            if (defined($self->{$ch}))
+            {
+                $string.=$self->{$ch}->[int(rand(scalar(@{$self->{$ch}})))];
+            }
+            else
+            {
+                croak qq(Unknown pattern character "$ch"!);
+            }
+        }
+        push(@strings, $string);
+    }
+
+    return wantarray ? @strings : join("", @strings);
 }
 
 sub random_regex
@@ -276,7 +279,7 @@ sub random_string
 
     my($n,%foo);
 
-    %foo=%patterns;
+    %foo=%old_patterns;
 
     for ($n=0;$n<=$#list;$n++)
     {
@@ -302,8 +305,9 @@ String::Random - Perl module to generate random strings based on a pattern
 
 I<or>
 
-  use String::Random qw(random_string);
-  print random_string("..."); # Also prints 3 random characters
+  use String::Random qw(random_regex random_string);
+  print random_regex('\d\d\d'); # Also prints 3 random digits
+  print random_string("...");   # Also prints 3 random printable characters
 
 =head1 DESCRIPTION
 
@@ -321,9 +325,17 @@ This would output something like this:
 
   Your password is UDwp$tj5
 
+For another example, let's say you were going to generate a 
+
+  use String::Random;
+  $pass = new String::Random;
+  print "Your password is ", $pass->randpattern("CCcc!ccn"), "\n";
+
+
 =head2 Patterns
 
-The pre-defined patterns are as follows:
+The pre-defined patterns (for use with C<randpattern()> and C<random_pattern()>)
+are as follows:
 
   c        Any lowercase character [A-Z]
   C        Any uppercase character [a-z]
@@ -358,7 +370,9 @@ The randpattern method returns a random string based on the concatenation
 of all the pattern strings in the list.
 
 Please note that in a future revision, it will return a list of random
-strings corresponding to the pattern strings when used in list context.
+strings corresponding to the pattern strings when used in list context.  In
+other words, using this method in a list context is currently not
+recommended.
 
 =item randregex LIST
 
@@ -410,12 +424,7 @@ would print something like this:
 
 =head1 BUGS
 
-As noted above, randpattern doesn't do the right thing when called in a
-list context.  Whether it does the right thing in a scalar context when
-passed a list is up for debate.
-
-I don't even want to think about what kind of bugs might be in randregex
-at this point.
+This is Bug Free(TM) code.  (At least until somebody finds one...)
 
 =head1 AUTHOR
 
