@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.18 2003/09/29 20:33:02 steve Exp $
+# $Id: Random.pm,v 1.19 2004/03/09 05:59:27 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string random_regex);
-$VERSION = '0.20';
+$VERSION = '0.21';
 
 use Carp;
 
