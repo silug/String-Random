@@ -132,7 +132,7 @@ print "ok 12\n";
 # 13: Test regex support
 @patterns=('\d\d\d', '\w\w\w', '[ABC][abc]', '[012][345]', '...', '[a-z][0-9]',
            '[aw-zX][123]', '[a-z]{5}', '0{80}', '[a-f][nprt]\d{3}',
-           '\t\n\r\f\a\e', '\S\S\S', '\s\s\s', '\w{5,10}');
+           '\t\n\r\f\a\e', '\S\S\S', '\s\s\s', '\w{5,10}', '\w?', '\w+', '\w*');
 for (@patterns)
 {
     my $ret=$foo->randregex($_);

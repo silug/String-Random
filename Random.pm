@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.14 2002/07/26 04:53:11 steve Exp $
+# $Id: Random.pm,v 1.15 2003/09/29 17:34:11 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string random_regex);
-$VERSION = '0.1992';
+$VERSION = '0.20';
 
 use Carp;
 
@@ -141,6 +141,21 @@ use vars qw(%old_patterns %patterns %regch);
                croak "unmatched []" if ($ch ne "]");
                push(@{$string}, \@tmp);
            },
+    '*' => sub
+           {
+	       my ($self, $ch, $chars, $string)=@_;
+	       unshift(@{$chars}, split("", "{0,}"));
+	   },
+    '+' => sub
+           {
+	       my ($self, $ch, $chars, $string)=@_;
+	       unshift(@{$chars}, split("", "{1,}"));
+	   },
+    '?' => sub
+           {
+	       my ($self, $ch, $chars, $string)=@_;
+	       unshift(@{$chars}, split("", "{0,1}"));
+	   },
     '{' => sub
            {
                my ($self, $ch, $chars, $string)=@_;
@@ -166,7 +181,7 @@ use vars qw(%old_patterns %patterns %regch);
 		       if (my ($min,$max) = $tmp =~ /^(\d*),(\d*)$/)
 		       {
 			   $min = 0 if (!length($min));
-			   $max = 10 if (!length($max)); # FIXME $ass->{number}
+			   $max = $self->{'_max'} if (!length($max));
 			   croak "bad range {$tmp}" if ($min>$max);
 			   if ($min == $max)
 			   {
@@ -209,6 +224,15 @@ sub new
     my $class=ref($proto) || $proto;
     my $self;
     $self={ %old_patterns }; # makes $self refer to a copy of %old_patterns
+    if (@_)
+    {
+        my %args=@_;
+	$self->{'_max'}=$args{'max'} if (defined($args{'max'}));
+    }
+    else
+    {
+        $self->{'_max'}=10;
+    }
     return bless($self, $class);
 }
 
@@ -365,8 +389,8 @@ For another example, let's say you were going to generate a
 The pre-defined patterns (for use with C<randpattern()> and C<random_pattern()>)
 are as follows:
 
-  c        Any lowercase character [A-Z]
-  C        Any uppercase character [a-z]
+  c        Any lowercase character [a-z]
+  C        Any uppercase character [A-Z]
   n        Any digit [0-9]
   !        A punctuation character [~`!@$%^&*()-_+={}[]|\:;"'.<>?/#,]
   .        Any of the above
