@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.13 2002/02/28 06:00:28 steve Exp $
+# $Id: Random.pm,v 1.14 2002/07/26 04:53:11 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string random_regex);
-$VERSION = '0.1991';
+$VERSION = '0.1992';
 
 use Carp;
 
@@ -30,8 +30,7 @@ use vars qw(%old_patterns %patterns %regch);
 @upper=("A".."Z");
 @lower=("a".."z");
 @digit=("0".."9");
-@punct=qw x~ ` ! @ $ % ^ & * ( ) - _ + = { } [ ] | \ : ; " ' . < > ? /x;
-push(@punct, "#", ","); # Quoted to avoid warnings when using -w
+@punct=map { chr($_); } (33..47,58..64,91..96,123..126);
 @any=(@upper, @lower, @digit, @punct);
 @salt=(@upper, @lower, @digit, ".", "/");
 @binary=map { chr($_) } (0..255);
@@ -159,15 +158,42 @@ push(@punct, "#", ","); # Quoted to avoid warnings when using -w
                    my $tmp;
                    while (defined($ch=shift(@{$chars})) && ($ch ne "}"))
                    {
-                       croak "'$ch' inside {} not supported" if ($ch!~/\d/);
+                       croak "'$ch' inside {} not supported" if ($ch!~/[\d,]/);
                        $tmp.=$ch;
                    }
-                   croak "number inside {} must be positive" if ($tmp<1);
-                   my $last=$string->[$#{$string}];
-                   for ($n=0;$n<($tmp-1);$n++)
-                   {
-                       push(@{$string}, $last);
-                   }
+		   if ($tmp=~/,/)
+		   {
+		       if (my ($min,$max) = $tmp =~ /^(\d*),(\d*)$/)
+		       {
+			   $min = 0 if (!length($min));
+			   $max = 10 if (!length($max)); # FIXME $ass->{number}
+			   croak "bad range {$tmp}" if ($min>$max);
+			   if ($min == $max)
+			   {
+			       $tmp = $min;
+			   }
+			   else
+			   {
+		               $tmp = $min + int(rand($max - $min +1));
+			   }
+		       }
+		       else
+		       {
+		           croak "malformed range {$tmp}";
+		       }
+		   }
+		   if ($tmp)
+		   {
+                       my $last=$string->[$#{$string}];
+                       for ($n=0;$n<($tmp-1);$n++)
+                       {
+                           push(@{$string}, $last);
+                       }
+		   }
+		   else
+		   {
+		       pop(@{$string});
+		   }
                }
                else
                {

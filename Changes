@@ -1,5 +1,10 @@
 Revision history for Perl extension String::Random.
 
+0.1992  - Added support for {n,m} ranges in regular expressions.
+        - Cleaned up the initialization of @punct.
+
+0.1991  - Added a "b" for random binary data in randpattern().
+
 0.199 
 	- fixed randregex() and randpattern() to Do The Right
 	  Thing(TM) when called in an array or scalar context, and
@@ -32,4 +37,4 @@ Revision history for Perl extension String::Random.
 0.1   Thu Sep 10 10:35:12 CDT 1998
 	- original version
 
-$Id: Changes,v 1.6 2002/02/26 19:59:08 steve Exp $
+$Id: Changes,v 1.7 2002/07/26 04:53:11 steve Exp $
