@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.4 1999/07/05 15:13:15 steve Exp $
+# $Id: Random.pm,v 1.5 1999/07/05 15:42:28 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.192';
+$VERSION = '0.193';
 
 use Carp;
 
@@ -58,7 +58,7 @@ sub new
     return bless($self, $class);
 }
 
-sub from_regex
+sub randregex
 {
     my $self=shift;
     croak "called without a reference" if (!ref($self));
@@ -150,6 +150,11 @@ sub from_regex
 
 sub from_pattern
 {
+    return $self->randpattern(@_);
+}
+
+sub randpattern
+{
     my $self=shift;
     croak "called without a reference" if (!ref($self));
 
@@ -187,7 +192,7 @@ sub random_string
 	@{$foo{$n}}=@{$list[$n]};
     }
 
-    return from_pattern(\%foo, $pattern);
+    return randpattern(\%foo, $pattern);
 }
 
 1;
@@ -201,7 +206,8 @@ String::Random - Perl module to generate random strings based on a pattern
 
   use String::Random;
   $foo = new String::Random;
-  print $foo->from_pattern("..."); # Prints 3 random printable characters
+  print $foo->randregex('\d\d\d'); # Prints 3 random digits
+  print $foo->randpattern("...");  # Prints 3 random printable characters
 
 I<or>
 
@@ -218,7 +224,7 @@ this:
 
   use String::Random;
   $pass = new String::Random;
-  print "Your password is ", $pass->from_pattern("CCcc!ccn"), "\n";
+  print "Your password is ", $pass->randpattern("CCcc!ccn"), "\n";
 
 This would output something like this:
 
@@ -255,13 +261,32 @@ for adding patterns.
 
 =over 8
 
-=item from_pattern LIST
+=item randpattern LIST
 
-The from_pattern method returns a random string based on the concatenation
+The randpattern method returns a random string based on the concatenation
 of all the pattern strings in the list.
 
 Please note that in a future revision, it will return a list of random
 strings corresponding to the pattern strings when used in list context.
+
+=item randregex LIST
+
+The randregex method returns a random string that will match the regular
+expression passed in the list argument.
+
+Please note that the arguments to randregex are not real regular
+expressions.  Only a small subset of regular expression syntax is actually
+supported.  So far, the following regular expression elements are
+supported:
+
+  []	Character classes
+  \w    Alphanumeric + "_".
+  \d    Digits.
+  \W    Printable characters other than those in \w.
+  \D    Printable characters other than those in \d.
+
+Regular expression support is still very experimental.  Currently special
+characters inside [] are not supported.
 
 =back
 
@@ -291,7 +316,7 @@ would print something like this:
 
 =head1 BUGS
 
-As noted above, from_pattern doesn't do the right thing when called in a
+As noted above, randpattern doesn't do the right thing when called in a
 list context.  Whether it does the right thing in a scalar context when
 passed a list is up for debate.
 

@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..10\n"; }
+BEGIN { $| = 1; print "1..11\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use String::Random;
 $loaded = 1;
@@ -107,5 +107,22 @@ if (!defined($baz) || ($baz->from_pattern("C") eq "n"))
     $failed++;
 }
 print "ok 10\n";
+
+# 11: Test regex support
+@patterns=('\d\d\d', '\w\w\w', '[ABC][abc]', '[012][345]', '...');
+for (@patterns)
+{
+    if ($foo->from_regex($_)!~/$_/)
+    {
+	$failed11++;
+	print "'$_' failed.\n" if ($ENV{VERBOSE});
+    }
+}
+if ($failed11)
+{
+    print "not ";
+    $failed++;
+}
+print "ok 11\n";
 
 exit $failed;
