@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.12 2002/02/26 20:01:06 steve Exp $
+# $Id: Random.pm,v 1.13 2002/02/28 06:00:28 steve Exp $
 
 package String::Random;
 
@@ -19,11 +19,11 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string random_regex);
-$VERSION = '0.199';
+$VERSION = '0.1991';
 
 use Carp;
 
-use vars qw(@upper @lower @digit @punct @any @salt);
+use vars qw(@upper @lower @digit @punct @any @salt @binary);
 use vars qw(%old_patterns %patterns %regch);
 
 # These are the various character sets.
@@ -34,6 +34,7 @@ use vars qw(%old_patterns %patterns %regch);
 push(@punct, "#", ","); # Quoted to avoid warnings when using -w
 @any=(@upper, @lower, @digit, @punct);
 @salt=(@upper, @lower, @digit, ".", "/");
+@binary=map { chr($_) } (0..255);
 
 # What's important is how they relate to the pattern characters.
 # These are the old patterns for randpattern/random_string.
@@ -44,6 +45,7 @@ push(@punct, "#", ","); # Quoted to avoid warnings when using -w
     '!' => [ @punct ],
     '.' => [ @any ],
     's' => [ @salt ],
+    'b' => [ @binary ],
 );
 
 # These are the regex-based patterns.
@@ -343,6 +345,7 @@ are as follows:
   !        A punctuation character [~`!@$%^&*()-_+={}[]|\:;"'.<>?/#,]
   .        Any of the above
   s        A "salt" character [A-Za-z0-9./]
+  b        Any binary data
 
 These can be modified, but if you need a different pattern it is better to
 create another pattern, possibly using one of the pre-defined as a base.
