@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.16 2003/09/29 17:52:57 steve Exp $
+# $Id: Random.pm,v 1.17 2003/09/29 19:34:23 steve Exp $
 
 package String::Random;
 
@@ -319,24 +319,24 @@ sub randpattern
 
 sub random_regex
 {
-    my %foo=%patterns;
-    return randregex(\%foo, @_);
+    my $foo=new String::Random;
+    return $foo->randregex(@_);
 }
 
 sub random_string
 {
     my($pattern,@list)=@_;
 
-    my($n,%foo);
+    my($n,$foo);
 
-    %foo=%old_patterns;
+    $foo=new String::Random;
 
     for ($n=0;$n<=$#list;$n++)
     {
-        @{$foo{$n}}=@{$list[$n]};
+        @{$foo->{$n}}=@{$list[$n]};
     }
 
-    return randpattern(\%foo, $pattern);
+    return $foo->randpattern($pattern);
 }
 
 1;
