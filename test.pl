@@ -110,7 +110,7 @@ print "ok 10\n";
 
 # 11: Test regex support
 @patterns=('\d\d\d', '\w\w\w', '[ABC][abc]', '[012][345]', '...', '[a-z][0-9]',
-           '[aw-zX][123]', '[a-z]{5}');
+           '[aw-zX][123]', '[a-z]{5}', '0{80}', '[a-f][nprt]\d{3}');
 for (@patterns)
 {
     if ($foo->randregex($_)!~/^$_$/)

@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.7 1999/07/08 01:11:18 steve Exp $
+# $Id: Random.pm,v 1.8 1999/07/08 03:39:01 steve Exp $
 
 package String::Random;
 
@@ -19,7 +19,7 @@ use Exporter ();
 
 @ISA = qw(Exporter);
 @EXPORT_OK = qw(random_string);
-$VERSION = '0.195';
+$VERSION = '0.196';
 
 use Carp;
 
@@ -77,7 +77,7 @@ sub randregex
     # up into a list for easier parsing.
     my @chars=split(//, $pattern);
 
-    while ($ch=shift(@chars))
+    while (defined($ch=shift(@chars)))
     {
         #print STDERR "\$ch=\"$ch\"\n"; # Debugging.
 
@@ -336,6 +336,7 @@ supported.  So far, the following regular expression elements are
 supported:
 
   []	Character classes
+  {}    Repetition
   \w    Alphanumeric + "_".
   \d    Digits.
   \W    Printable characters other than those in \w.
@@ -343,7 +344,8 @@ supported:
 
 Regular expression support is still very experimental.  Currently special
 characters inside [] are not supported (with the exception of "-" to denote
-ranges of characters).
+ranges of characters).  The parser doesn't care for spaces in the "regular
+expression" either.
 
 =back
 
@@ -376,6 +378,9 @@ would print something like this:
 As noted above, randpattern doesn't do the right thing when called in a
 list context.  Whether it does the right thing in a scalar context when
 passed a list is up for debate.
+
+I don't even want to think about what kind of bugs might be in randregex
+at this point.
 
 =head1 AUTHOR
 
