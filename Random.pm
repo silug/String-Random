@@ -1,5 +1,5 @@
 # String::Random - Generates a random string from a pattern
-# Copyright (C) 1999,2000 Steven Pritchard <steve@silug.org>
+# Copyright (C) 1999-2002 Steven Pritchard <steve@silug.org>
 #
 # This program is free software; you can redistribute it
 # and/or modify it under the same terms as Perl itself.
@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.11 2002/02/26 19:59:08 steve Exp $
+# $Id: Random.pm,v 1.12 2002/02/26 20:01:06 steve Exp $
 
 package String::Random;
 
