@@ -1,6 +1,7 @@
 Build.PL
 Changes
 MANIFEST
+META.yml
 TODO
 README
 lib/String/Random.pm
