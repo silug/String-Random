@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.1 2006/04/20 19:01:45 steve Exp $
+# $Id: Random.pm,v 1.2 2006/04/20 19:54:03 steve Exp $
 
 package String::Random;
 
@@ -191,10 +191,12 @@ sub randregex {
     my $self=shift;
     croak "called without a reference" if (!ref($self));
 
-    my @strings;
+    my @strings=();
 
-    while (my $pattern=shift) {
-        my ($ch, @string, $string);
+    while (defined(my $pattern=shift)) {
+        my $ch;
+        my @string=();
+        my $string='';
 
         # Split the characters in the pattern
         # up into a list for easier parsing.
