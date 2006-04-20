@@ -8,11 +8,13 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.2 2006/04/20 19:54:03 steve Exp $
+# $Id: Random.pm,v 1.3 2006/04/20 22:09:35 steve Exp $
 
 package String::Random;
 
 use strict;
+use warnings;
+
 use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 
 use Exporter ();
@@ -236,10 +238,10 @@ sub randpattern {
     my $self=shift;
     croak "called without a reference" if (!ref($self));
 
-    my @strings;
+    my @strings=();
 
-    while (my $pattern=shift) {
-        my $string;
+    while (defined(my $pattern=shift)) {
+        my $string='';
 
         for my $ch (split(//, $pattern)) {
             if (defined($self->{$ch})) {
