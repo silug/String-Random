@@ -1,10 +1,11 @@
 Revision history for Perl extension String::Random.
 
-0.21
+0.21   Thu Apr 20 17:12:14 CDT 2006
         - Modify test.pl to use Test::More.
         - Build with Module::Build.
         - Minor whitespace cleanup.
-        - Avoid undefined results from randregex().
+        - Avoid undefined results from randregex() and randpattern().
+        - Turn on warnings in the module.
 
 0.20   Mon Sep 29 15:33:02 CDT 2003
         - Added support for *, +, and ? in regular expressions.
@@ -48,6 +49,6 @@ Revision history for Perl extension String::Random.
 0.1    Thu Sep 10 10:35:12 CDT 1998
         - original version
 
-$Id: Changes,v 1.11 2006/04/20 19:54:29 steve Exp $
+$Id: Changes,v 1.12 2006/04/20 22:13:00 steve Exp $
 
 # vi: set ai et:
