@@ -38,9 +38,9 @@ ok($abc eq 'abc', "randpattern() (scalar)");
 $failed8=0;
 for ($n=0;$n<@foo;$n++) {
     if ($bar[$n] ne $foo->{$foo[$n]}->[0]) {
-	$failed8=1;
-	$failed++;
-	last;
+        $failed8=1;
+        $failed++;
+        last;
     }
 }
 ok(!$failed8, "randpattern() (list)");
@@ -51,9 +51,9 @@ ok(!$failed8, "randpattern() (list)");
 $failed9=0;
 for ($n=0;$n<26;$n++) {
     if (!defined($foo->{'C'}->[$n]) || ($upcase[$n] ne $foo->{'C'}->[$n])) {
-	$failed9=1;
-	$failed++;
-	last;
+        $failed9=1;
+        $failed++;
+        last;
     }
 }
 ok(!$failed9, "patterns");
@@ -77,8 +77,8 @@ $failed13=0;
 for (@patterns) {
     my $ret=$foo->randregex($_);
     if ($ret !~ /^$_$/) {
-	$failed13++;
-	print "'$_' failed, '$ret' does not match.\n" if ($ENV{VERBOSE});
+        $failed13++;
+        print "'$_' failed, '$ret' does not match.\n" if ($ENV{VERBOSE});
     }
 }
 ok(!$failed13, "randregex()");
@@ -91,9 +91,9 @@ my @ret=$foo->randregex(@patterns);
 $failed15=0;
 for ($n=0;$n<@patterns;$n++) {
     if ($ret[$n] !~ /^$patterns[$n]$/) {
-	$failed15++;
-	print "'$patterns[$n]' failed, '$ret[$n]' does not match.\n"
-	    if ($ENV{VERBOSE});
+        $failed15++;
+        print "'$patterns[$n]' failed, '$ret[$n]' does not match.\n"
+            if ($ENV{VERBOSE});
     }
 }
 ok(!$failed15, "randregex() (list)");
@@ -103,9 +103,11 @@ ok(!$failed15, "randregex() (list)");
 $failed16=0;
 for ($n=0;$n<@patterns;$n++) {
     if ($ret[$n] !~ /^$patterns[$n]$/) {
-	$failed16++;
-	print "'$patterns[$n]' failed, '$ret[$n]' does not match.\n"
-	    if ($ENV{VERBOSE});
+        $failed16++;
+        print "'$patterns[$n]' failed, '$ret[$n]' does not match.\n"
+            if ($ENV{VERBOSE});
     }
 }
 ok(!$failed16, "random_regex() (list)");
+
+# vi: set ai et:
