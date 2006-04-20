@@ -8,7 +8,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# $Id: Random.pm,v 1.20 2006/04/20 18:44:52 steve Exp $
+# $Id: Random.pm,v 1.1 2006/04/20 19:01:45 steve Exp $
 
 package String::Random;
 
