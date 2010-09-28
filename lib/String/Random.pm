@@ -72,105 +72,105 @@ our %patterns = (
 
 # These characters are treated specially in randregex().
 our %regch = (
-   "\\" => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               if (@{$chars}) {
-                   my $tmp=shift(@{$chars});
-                   if ($tmp eq "x") {
-                       # This is supposed to be a number in hex, so
-                       # there had better be at least 2 characters left.
-                       $tmp=shift(@{$chars}) . shift(@{$chars});
-                       push(@{$string}, [chr(hex($tmp))]);
-                   } elsif ($tmp=~/[0-7]/) {
-                       carp "octal parsing not implemented.  treating literally.";
-                       push(@{$string}, [$tmp]);
-                   } elsif (defined($patterns{"\\$tmp"})) {
-                       $ch.=$tmp;
-                       push(@{$string}, $patterns{$ch});
-                   } else {
-                       carp "'\\$tmp' being treated as literal '$tmp'";
-                       push(@{$string}, [$tmp]);
-                   }
-               } else {
-                   croak "regex not terminated";
-               }
-           },
+    "\\" => sub {
+        my ($self, $ch, $chars, $string)=@_;
+        if (@{$chars}) {
+            my $tmp=shift(@{$chars});
+            if ($tmp eq "x") {
+                # This is supposed to be a number in hex, so
+                # there had better be at least 2 characters left.
+                $tmp=shift(@{$chars}) . shift(@{$chars});
+                push(@{$string}, [chr(hex($tmp))]);
+            } elsif ($tmp=~/[0-7]/) {
+                carp "octal parsing not implemented.  treating literally.";
+                push(@{$string}, [$tmp]);
+            } elsif (defined($patterns{"\\$tmp"})) {
+                $ch.=$tmp;
+                push(@{$string}, $patterns{$ch});
+            } else {
+                carp "'\\$tmp' being treated as literal '$tmp'";
+                push(@{$string}, [$tmp]);
+            }
+        } else {
+            croak "regex not terminated";
+        }
+    },
     '.' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               push(@{$string}, $patterns{$ch});
-           },
+        my ($self, $ch, $chars, $string)=@_;
+        push(@{$string}, $patterns{$ch});
+    },
     '[' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               my @tmp;
-               while (defined($ch=shift(@{$chars})) && ($ch ne "]")) {
-                   if (($ch eq "-") && @{$chars} && @tmp) {
-                       $ch=shift(@{$chars});
-                       for (my $n=ord($tmp[$#tmp]);$n<ord($ch);$n++) {
-                           push(@tmp, chr($n+1));
-                       }
-                   } else {
-                       carp "'$ch' will be treated literally inside []"
-                           if ($ch=~/\W/);
-                       push(@tmp, $ch);
-                   }
-               }
-               croak "unmatched []" if ($ch ne "]");
-               push(@{$string}, \@tmp);
-           },
+        my ($self, $ch, $chars, $string)=@_;
+        my @tmp;
+        while (defined($ch=shift(@{$chars})) && ($ch ne "]")) {
+            if (($ch eq "-") && @{$chars} && @tmp) {
+                $ch=shift(@{$chars});
+                for (my $n=ord($tmp[$#tmp]);$n<ord($ch);$n++) {
+                    push(@tmp, chr($n+1));
+                }
+            } else {
+                carp "'$ch' will be treated literally inside []"
+                    if ($ch=~/\W/);
+                push(@tmp, $ch);
+            }
+        }
+        croak "unmatched []" if ($ch ne "]");
+        push(@{$string}, \@tmp);
+    },
     '*' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               unshift(@{$chars}, split("", "{0,}"));
-           },
+        my ($self, $ch, $chars, $string)=@_;
+        unshift(@{$chars}, split("", "{0,}"));
+    },
     '+' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               unshift(@{$chars}, split("", "{1,}"));
-           },
+        my ($self, $ch, $chars, $string)=@_;
+        unshift(@{$chars}, split("", "{1,}"));
+    },
     '?' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               unshift(@{$chars}, split("", "{0,1}"));
-           },
+        my ($self, $ch, $chars, $string)=@_;
+        unshift(@{$chars}, split("", "{0,1}"));
+    },
     '{' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               my ($n, $closed);
-               for ($n=0;$n<scalar(@{$chars});$n++) {
-                   if ($chars->[$n] eq "}") {
-                       $closed++;
-                       last;
-                   }
-               }
-               if ($closed) {
-                   my $tmp;
-                   while (defined($ch=shift(@{$chars})) && ($ch ne "}")) {
-                       croak "'$ch' inside {} not supported" if ($ch!~/[\d,]/);
-                       $tmp.=$ch;
-                   }
-                   if ($tmp=~/,/) {
-                       if (my ($min,$max) = $tmp =~ /^(\d*),(\d*)$/) {
-                           $min = 0 if (!length($min));
-                           $max = $self->{'_max'} if (!length($max));
-                           croak "bad range {$tmp}" if ($min>$max);
-                           if ($min == $max) {
-                               $tmp = $min;
-                           } else {
-                               $tmp = $min + int(rand($max - $min +1));
-                           }
-                       } else {
-                           croak "malformed range {$tmp}";
-                       }
-                   }
-                   if ($tmp) {
-                       my $last=$string->[$#{$string}];
-                       for ($n=0;$n<($tmp-1);$n++) {
-                           push(@{$string}, $last);
-                       }
-                   } else {
-                       pop(@{$string});
-                   }
-               } else {
-                   # { isn't closed, so treat it literally.
-                   push(@{$string}, [$ch]);
-               }
-           },
+        my ($self, $ch, $chars, $string)=@_;
+        my ($n, $closed);
+        for ($n=0;$n<scalar(@{$chars});$n++) {
+            if ($chars->[$n] eq "}") {
+                $closed++;
+                last;
+            }
+        }
+        if ($closed) {
+            my $tmp;
+            while (defined($ch=shift(@{$chars})) && ($ch ne "}")) {
+                croak "'$ch' inside {} not supported" if ($ch!~/[\d,]/);
+                $tmp.=$ch;
+            }
+            if ($tmp=~/,/) {
+                if (my ($min,$max) = $tmp =~ /^(\d*),(\d*)$/) {
+                    $min = 0 if (!length($min));
+                    $max = $self->{'_max'} if (!length($max));
+                    croak "bad range {$tmp}" if ($min>$max);
+                    if ($min == $max) {
+                        $tmp = $min;
+                    } else {
+                        $tmp = $min + int(rand($max - $min +1));
+                    }
+                } else {
+                    croak "malformed range {$tmp}";
+                }
+            }
+            if ($tmp) {
+                my $last=$string->[$#{$string}];
+                for ($n=0;$n<($tmp-1);$n++) {
+                    push(@{$string}, $last);
+                }
+            } else {
+                pop(@{$string});
+            }
+        } else {
+            # { isn't closed, so treat it literally.
+            push(@{$string}, [$ch]);
+        }
+    },
 );
 
 sub new {
