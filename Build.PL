@@ -29,7 +29,7 @@ my $builder = Test::Run::Builder->new(
     {
         resources =>
         {
-            repository => 'http://github.com/shlomif/perl-String-Random',
+            repository => 'http://github.com/shlomif/String-Random',
         },
         keywords =>
         [

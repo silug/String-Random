@@ -1,5 +1,8 @@
 Revision history for Perl extension String::Random:
 
+0.25   Fri Dec 27 2013
+- Update the link to the version control repository.
+
 0.24   Tue Dec 03 2013
 - Add keywords and a link to he repository to Build.PL / META.yml.
 
