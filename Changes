@@ -1,5 +1,8 @@
 Revision history for Perl extension String::Random:
 
+0.26
+- LICENSE section and file (CPANTS).
+
 0.25   Fri Dec 27 2013
 - Update the link to the version control repository.
 
