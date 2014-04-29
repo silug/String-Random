@@ -1,5 +1,10 @@
 Revision history for Perl extension String::Random:
 
+0.27
+- Cache parsed range patterns.
+    - Pull Request from Kosuke Asami (co-me). Thanks!
+        - https://github.com/shlomif/String-Random/pull/1
+
 0.26   Fri Jan 31 2014
 - LICENSE section and file (CPANTS).
 - Minimum version of perl in Build.PL / META.yml .
