@@ -118,8 +118,8 @@ our %regch = (
                        }
                        else {
                            my @chs;
-                           for (my $n=ord($begin_ch);$n<ord($ch);$n++) {
-                               push(@chs, chr($n+1));
+                           for my $n ((ord($begin_ch)+1) .. ord($ch)) {
+                               push @chs, chr($n);
                            }
                            $parsed_range_patterns{$key} = \@chs;
                            push @tmp, @chs;
