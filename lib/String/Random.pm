@@ -147,11 +147,12 @@ our %regch = (
            },
     '{' => sub {
                my ($self, $ch, $chars, $string)=@_;
-               my ($n, $closed);
-               for ($n=0;$n<scalar(@{$chars});$n++) {
-                   if ($chars->[$n] eq "}") {
-                       $closed++;
-                       last;
+               my $closed;
+               CLOSED:
+               for my $c (@$chars) {
+                   if ($c eq "}") {
+                       $closed = 1;
+                       last CLOSED;
                    }
                }
                if ($closed) {
@@ -175,10 +176,9 @@ our %regch = (
                        }
                    }
                    if ($tmp) {
-                       my $last=$string->[$#{$string}];
-                       for ($n=0;$n<($tmp-1);$n++) {
-                           push(@{$string}, $last);
-                       }
+                       my $last=$string->[-1];
+
+                       push @$string, (($last) x ($tmp-1));
                    } else {
                        pop(@{$string});
                    }
@@ -234,7 +234,7 @@ sub randregex {
         }
 
         foreach $ch (@string) {
-            $string.=$ch->[int(rand(scalar(@{$ch})))];
+            $string .= $ch->[ int(rand(scalar(@{$ch}))) ];
         }
 
         push(@strings, $string);
@@ -252,7 +252,7 @@ sub from_pattern {
 }
 
 sub randpattern {
-    my $self=shift;
+    my $self = shift;
     croak "called without a reference" if (!ref($self));
 
     my @strings=();
@@ -281,12 +281,10 @@ sub random_regex {
 sub random_string {
     my($pattern,@list)=@_;
 
-    my($n,$foo);
+    my $foo = String::Random->new;
 
-    $foo=new String::Random;
-
-    for ($n=0;$n<=$#list;$n++) {
-        @{$foo->{$n}}=@{$list[$n]};
+    for my $n (0 .. $#list) {
+        $foo->{$n} = [@{$list[$n]}];
     }
 
     return $foo->randpattern($pattern);
