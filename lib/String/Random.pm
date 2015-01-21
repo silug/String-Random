@@ -23,9 +23,9 @@ use parent qw(Exporter);
 our %EXPORT_TAGS = (
     'all' => [
         qw(
-          &random_string
-          &random_regex
-          )
+            &random_string
+            &random_regex
+            )
     ]
 );
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -134,7 +134,7 @@ our %regch = (
             }
             else {
                 carp "'$ch' will be treated literally inside []"
-                  if ( $ch =~ /\W/ );
+                    if ( $ch =~ /\W/ );
                 push( @tmp, $ch );
             }
         }
@@ -156,7 +156,7 @@ our %regch = (
     '{' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
         my $closed;
-      CLOSED:
+    CLOSED:
         for my $c (@$chars) {
             if ( $c eq "}" ) {
                 $closed = 1;
@@ -278,8 +278,8 @@ sub randpattern {
 
         for my $ch ( split( //, $pattern ) ) {
             if ( defined( $self->{$ch} ) ) {
-                $string .=
-                  $self->{$ch}->[ int( rand( scalar( @{ $self->{$ch} } ) ) ) ];
+                $string .= $self->{$ch}
+                    ->[ int( rand( scalar( @{ $self->{$ch} } ) ) ) ];
             }
             else {
                 croak qq(Unknown pattern character "$ch"!);
