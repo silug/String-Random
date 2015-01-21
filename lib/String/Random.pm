@@ -251,7 +251,7 @@ sub randregex {
             }
         }
 
-        foreach $ch (@string) {
+        foreach my $ch (@string) {
             $string .= $ch->[ int( rand( scalar( @{$ch} ) ) ) ];
         }
 
