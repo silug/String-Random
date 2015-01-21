@@ -32,17 +32,17 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our $VERSION   = '0.26';
 
 # These are the various character sets.
-our @upper  = ( "A" .. "Z" );
-our @lower  = ( "a" .. "z" );
-our @digit  = ( "0" .. "9" );
-our @punct  = map { chr($_); } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
-our @any    = ( @upper, @lower, @digit, @punct );
-our @salt   = ( @upper, @lower, @digit, ".", "/" );
-our @binary = map { chr($_) } ( 0 .. 255 );
+my @upper  = ( "A" .. "Z" );
+my @lower  = ( "a" .. "z" );
+my @digit  = ( "0" .. "9" );
+my @punct  = map { chr($_); } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
+my @any    = ( @upper, @lower, @digit, @punct );
+my @salt   = ( @upper, @lower, @digit, ".", "/" );
+my @binary = map { chr($_) } ( 0 .. 255 );
 
 # What's important is how they relate to the pattern characters.
 # These are the old patterns for randpattern/random_string.
-our %old_patterns = (
+my %old_patterns = (
     'C' => [@upper],
     'c' => [@lower],
     'n' => [@digit],
@@ -53,7 +53,7 @@ our %old_patterns = (
 );
 
 # These are the regex-based patterns.
-our %patterns = (
+my %patterns = (
 
     # These are the regex-equivalents.
     '.'  => [@any],
@@ -74,10 +74,10 @@ our %patterns = (
 );
 
 # This is used for cache of parsed range patterns in %regch
-our %parsed_range_patterns = ();
+my %parsed_range_patterns = ();
 
 # These characters are treated specially in randregex().
-our %regch = (
+my %regch = (
     "\\" => sub {
         my ( $self, $ch, $chars, $string ) = @_;
         if ( @{$chars} ) {
