@@ -186,9 +186,9 @@ my %regch = (
                 }
             }
             if ($tmp) {
-                my $last = $string->[-1];
+                my $prev_ch = $string->[-1];
 
-                push @$string, ( ($last) x ( $tmp - 1 ) );
+                push @$string, ( ($prev_ch) x ( $tmp - 1 ) );
             }
             else {
                 pop( @{$string} );
