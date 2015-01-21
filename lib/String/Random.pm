@@ -20,54 +20,59 @@ use warnings;
 use Carp;
 use Exporter ();
 
-our @ISA = qw(Exporter);
-our %EXPORT_TAGS = ( 'all' => [ qw(
-    &random_string
-    &random_regex
-) ] );
+our @ISA         = qw(Exporter);
+our %EXPORT_TAGS = (
+    'all' => [
+        qw(
+          &random_string
+          &random_regex
+          )
+    ]
+);
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our @EXPORT = ();
-our $VERSION = '0.26';
+our @EXPORT    = ();
+our $VERSION   = '0.26';
 
 # These are the various character sets.
-our @upper=("A".."Z");
-our @lower=("a".."z");
-our @digit=("0".."9");
-our @punct=map { chr($_); } (33..47,58..64,91..96,123..126);
-our @any=(@upper, @lower, @digit, @punct);
-our @salt=(@upper, @lower, @digit, ".", "/");
-our @binary=map { chr($_) } (0..255);
+our @upper  = ( "A" .. "Z" );
+our @lower  = ( "a" .. "z" );
+our @digit  = ( "0" .. "9" );
+our @punct  = map { chr($_); } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
+our @any    = ( @upper, @lower, @digit, @punct );
+our @salt   = ( @upper, @lower, @digit, ".", "/" );
+our @binary = map { chr($_) } ( 0 .. 255 );
 
 # What's important is how they relate to the pattern characters.
 # These are the old patterns for randpattern/random_string.
 our %old_patterns = (
-    'C' => [ @upper ],
-    'c' => [ @lower ],
-    'n' => [ @digit ],
-    '!' => [ @punct ],
-    '.' => [ @any ],
-    's' => [ @salt ],
-    'b' => [ @binary ],
+    'C' => [@upper],
+    'c' => [@lower],
+    'n' => [@digit],
+    '!' => [@punct],
+    '.' => [@any],
+    's' => [@salt],
+    'b' => [@binary],
 );
 
 # These are the regex-based patterns.
 our %patterns = (
+
     # These are the regex-equivalents.
-    '.' => [ @any ],
-    '\d' => [ @digit ],
+    '.'  => [@any],
+    '\d' => [@digit],
     '\D' => [ @upper, @lower, @punct ],
     '\w' => [ @upper, @lower, @digit, "_" ],
     '\W' => [ grep { $_ ne "_" } @punct ],
-    '\s' => [ " ", "\t" ], # Would anything else make sense?
+    '\s' => [ " ", "\t" ],                   # Would anything else make sense?
     '\S' => [ @upper, @lower, @digit, @punct ],
 
     # These are translated to their double quoted equivalents.
-    '\t' => [ "\t" ],
-    '\n' => [ "\n" ],
-    '\r' => [ "\r" ],
-    '\f' => [ "\f" ],
-    '\a' => [ "\a" ],
-    '\e' => [ "\e" ],
+    '\t' => ["\t"],
+    '\n' => ["\n"],
+    '\r' => ["\r"],
+    '\f' => ["\f"],
+    '\a' => ["\a"],
+    '\e' => ["\e"],
 );
 
 # This is used for cache of parsed range patterns in %regch
@@ -75,216 +80,231 @@ our %parsed_range_patterns = ();
 
 # These characters are treated specially in randregex().
 our %regch = (
-   "\\" => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               if (@{$chars}) {
-                   my $tmp=shift(@{$chars});
-                   if ($tmp eq "x") {
-                       # This is supposed to be a number in hex, so
-                       # there had better be at least 2 characters left.
-                       $tmp=shift(@{$chars}) . shift(@{$chars});
-                       push(@{$string}, [chr(hex($tmp))]);
-                   } elsif ($tmp=~/[0-7]/) {
-                       carp "octal parsing not implemented.  treating literally.";
-                       push(@{$string}, [$tmp]);
-                   } elsif (defined($patterns{"\\$tmp"})) {
-                       $ch.=$tmp;
-                       push(@{$string}, $patterns{$ch});
-                   }
-                   else {
-                       if ($tmp =~ /\w/) {
-                           carp "'\\$tmp' being treated as literal '$tmp'";
-                       }
-                       push(@{$string}, [$tmp]);
-                   }
-               } else {
-                   croak "regex not terminated";
-               }
-           },
-    '.' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               push(@{$string}, $patterns{$ch});
-           },
-    '[' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               my @tmp;
-               while (defined($ch=shift(@{$chars})) && ($ch ne "]")) {
-                   if (($ch eq "-") && @{$chars} && @tmp) {
-                       my $begin_ch = $tmp[$#tmp];
-                       $ch=shift(@{$chars});
-                       my $key = "$begin_ch-$ch";
-                       if (defined($parsed_range_patterns{$key})) {
-                           push(@tmp, @{$parsed_range_patterns{$key}});
-                       }
-                       else {
-                           my @chs;
-                           for my $n ((ord($begin_ch)+1) .. ord($ch)) {
-                               push @chs, chr($n);
-                           }
-                           $parsed_range_patterns{$key} = \@chs;
-                           push @tmp, @chs;
-                       }
-                   } else {
-                       carp "'$ch' will be treated literally inside []"
-                           if ($ch=~/\W/);
-                       push(@tmp, $ch);
-                   }
-               }
-               croak "unmatched []" if ($ch ne "]");
-               push(@{$string}, \@tmp);
-           },
-    '*' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               unshift(@{$chars}, split("", "{0,}"));
-           },
-    '+' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               unshift(@{$chars}, split("", "{1,}"));
-           },
-    '?' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               unshift(@{$chars}, split("", "{0,1}"));
-           },
-    '{' => sub {
-               my ($self, $ch, $chars, $string)=@_;
-               my $closed;
-               CLOSED:
-               for my $c (@$chars) {
-                   if ($c eq "}") {
-                       $closed = 1;
-                       last CLOSED;
-                   }
-               }
-               if ($closed) {
-                   my $tmp;
-                   while (defined($ch=shift(@{$chars})) && ($ch ne "}")) {
-                       croak "'$ch' inside {} not supported" if ($ch!~/[\d,]/);
-                       $tmp.=$ch;
-                   }
-                   if ($tmp=~/,/) {
-                       if (my ($min,$max) = $tmp =~ /^(\d*),(\d*)$/) {
-                           $min = 0 if (!length($min));
-                           $max = $self->{'_max'} if (!length($max));
-                           croak "bad range {$tmp}" if ($min>$max);
-                           if ($min == $max) {
-                               $tmp = $min;
-                           } else {
-                               $tmp = $min + int(rand($max - $min +1));
-                           }
-                       } else {
-                           croak "malformed range {$tmp}";
-                       }
-                   }
-                   if ($tmp) {
-                       my $last=$string->[-1];
+    "\\" => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        if ( @{$chars} ) {
+            my $tmp = shift( @{$chars} );
+            if ( $tmp eq "x" ) {
 
-                       push @$string, (($last) x ($tmp-1));
-                   } else {
-                       pop(@{$string});
-                   }
-               } else {
-                   # { isn't closed, so treat it literally.
-                   push(@{$string}, [$ch]);
-               }
-           },
+                # This is supposed to be a number in hex, so
+                # there had better be at least 2 characters left.
+                $tmp = shift( @{$chars} ) . shift( @{$chars} );
+                push( @{$string}, [ chr( hex($tmp) ) ] );
+            }
+            elsif ( $tmp =~ /[0-7]/ ) {
+                carp "octal parsing not implemented.  treating literally.";
+                push( @{$string}, [$tmp] );
+            }
+            elsif ( defined( $patterns{"\\$tmp"} ) ) {
+                $ch .= $tmp;
+                push( @{$string}, $patterns{$ch} );
+            }
+            else {
+                if ( $tmp =~ /\w/ ) {
+                    carp "'\\$tmp' being treated as literal '$tmp'";
+                }
+                push( @{$string}, [$tmp] );
+            }
+        }
+        else {
+            croak "regex not terminated";
+        }
+    },
+    '.' => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        push( @{$string}, $patterns{$ch} );
+    },
+    '[' => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        my @tmp;
+        while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne "]" ) ) {
+            if ( ( $ch eq "-" ) && @{$chars} && @tmp ) {
+                my $begin_ch = $tmp[$#tmp];
+                $ch = shift( @{$chars} );
+                my $key = "$begin_ch-$ch";
+                if ( defined( $parsed_range_patterns{$key} ) ) {
+                    push( @tmp, @{ $parsed_range_patterns{$key} } );
+                }
+                else {
+                    my @chs;
+                    for my $n ( ( ord($begin_ch) + 1 ) .. ord($ch) ) {
+                        push @chs, chr($n);
+                    }
+                    $parsed_range_patterns{$key} = \@chs;
+                    push @tmp, @chs;
+                }
+            }
+            else {
+                carp "'$ch' will be treated literally inside []"
+                  if ( $ch =~ /\W/ );
+                push( @tmp, $ch );
+            }
+        }
+        croak "unmatched []" if ( $ch ne "]" );
+        push( @{$string}, \@tmp );
+    },
+    '*' => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        unshift( @{$chars}, split( "", "{0,}" ) );
+    },
+    '+' => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        unshift( @{$chars}, split( "", "{1,}" ) );
+    },
+    '?' => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        unshift( @{$chars}, split( "", "{0,1}" ) );
+    },
+    '{' => sub {
+        my ( $self, $ch, $chars, $string ) = @_;
+        my $closed;
+      CLOSED:
+        for my $c (@$chars) {
+            if ( $c eq "}" ) {
+                $closed = 1;
+                last CLOSED;
+            }
+        }
+        if ($closed) {
+            my $tmp;
+            while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne "}" ) ) {
+                croak "'$ch' inside {} not supported" if ( $ch !~ /[\d,]/ );
+                $tmp .= $ch;
+            }
+            if ( $tmp =~ /,/ ) {
+                if ( my ( $min, $max ) = $tmp =~ /^(\d*),(\d*)$/ ) {
+                    $min = 0 if ( !length($min) );
+                    $max = $self->{'_max'} if ( !length($max) );
+                    croak "bad range {$tmp}" if ( $min > $max );
+                    if ( $min == $max ) {
+                        $tmp = $min;
+                    }
+                    else {
+                        $tmp = $min + int( rand( $max - $min + 1 ) );
+                    }
+                }
+                else {
+                    croak "malformed range {$tmp}";
+                }
+            }
+            if ($tmp) {
+                my $last = $string->[-1];
+
+                push @$string, ( ($last) x ( $tmp - 1 ) );
+            }
+            else {
+                pop( @{$string} );
+            }
+        }
+        else {
+            # { isn't closed, so treat it literally.
+            push( @{$string}, [$ch] );
+        }
+    },
 );
 
 sub new {
-    my $proto=shift;
-    my $class=ref($proto) || $proto;
+    my $proto = shift;
+    my $class = ref($proto) || $proto;
     my $self;
-    $self={ %old_patterns }; # makes $self refer to a copy of %old_patterns
-    my %args=();
-    %args=@_ if (@_);
-    if (defined($args{'max'})) {
-        $self->{'_max'}=$args{'max'};
-    } else {
-        $self->{'_max'}=10;
+    $self = {%old_patterns};    # makes $self refer to a copy of %old_patterns
+    my %args = ();
+    %args = @_ if (@_);
+    if ( defined( $args{'max'} ) ) {
+        $self->{'_max'} = $args{'max'};
     }
-    return bless($self, $class);
+    else {
+        $self->{'_max'} = 10;
+    }
+    return bless( $self, $class );
 }
 
 # Returns a random string for each regular expression given as an
 # argument, or the strings concatenated when used in a scalar context.
 sub randregex {
-    my $self=shift;
-    croak "called without a reference" if (!ref($self));
+    my $self = shift;
+    croak "called without a reference" if ( !ref($self) );
 
-    my @strings=();
+    my @strings = ();
 
-    while (defined(my $pattern=shift)) {
+    while ( defined( my $pattern = shift ) ) {
         my $ch;
-        my @string=();
-        my $string='';
+        my @string = ();
+        my $string = '';
 
         # Split the characters in the pattern
         # up into a list for easier parsing.
-        my @chars=split(//, $pattern);
+        my @chars = split( //, $pattern );
 
-        while (defined($ch=shift(@chars))) {
-            if (defined($regch{$ch})) {
-                $regch{$ch}->($self, $ch, \@chars, \@string);
-            } elsif ($ch=~/[\$\^\*\(\)\+\{\}\]\|\?]/) {
+        while ( defined( $ch = shift(@chars) ) ) {
+            if ( defined( $regch{$ch} ) ) {
+                $regch{$ch}->( $self, $ch, \@chars, \@string );
+            }
+            elsif ( $ch =~ /[\$\^\*\(\)\+\{\}\]\|\?]/ ) {
+
                 # At least some of these probably should have special meaning.
                 carp "'$ch' not implemented.  treating literally.";
-                push(@string, [$ch]);
-            } else {
-                push(@string, [$ch]);
+                push( @string, [$ch] );
+            }
+            else {
+                push( @string, [$ch] );
             }
         }
 
         foreach $ch (@string) {
-            $string .= $ch->[ int(rand(scalar(@{$ch}))) ];
+            $string .= $ch->[ int( rand( scalar( @{$ch} ) ) ) ];
         }
 
-        push(@strings, $string);
+        push( @strings, $string );
     }
 
-    return wantarray ? @strings : join("", @strings);
+    return wantarray ? @strings : join( "", @strings );
 }
 
 # For compatibility with an ancient version, please ignore...
 sub from_pattern {
-    my $self=shift;
-    croak "called without a reference" if (!ref($self));
+    my $self = shift;
+    croak "called without a reference" if ( !ref($self) );
 
     return $self->randpattern(@_);
 }
 
 sub randpattern {
     my $self = shift;
-    croak "called without a reference" if (!ref($self));
+    croak "called without a reference" if ( !ref($self) );
 
-    my @strings=();
+    my @strings = ();
 
-    while (defined(my $pattern=shift)) {
-        my $string='';
+    while ( defined( my $pattern = shift ) ) {
+        my $string = '';
 
-        for my $ch (split(//, $pattern)) {
-            if (defined($self->{$ch})) {
-                $string.=$self->{$ch}->[int(rand(scalar(@{$self->{$ch}})))];
-            } else {
+        for my $ch ( split( //, $pattern ) ) {
+            if ( defined( $self->{$ch} ) ) {
+                $string .=
+                  $self->{$ch}->[ int( rand( scalar( @{ $self->{$ch} } ) ) ) ];
+            }
+            else {
                 croak qq(Unknown pattern character "$ch"!);
             }
         }
-        push(@strings, $string);
+        push( @strings, $string );
     }
 
-    return wantarray ? @strings : join("", @strings);
+    return wantarray ? @strings : join( "", @strings );
 }
 
 sub random_regex {
-    my $foo=new String::Random;
+    my $foo = new String::Random;
     return $foo->randregex(@_);
 }
 
 sub random_string {
-    my($pattern,@list)=@_;
+    my ( $pattern, @list ) = @_;
 
     my $foo = String::Random->new;
 
-    for my $n (0 .. $#list) {
-        $foo->{$n} = [@{$list[$n]}];
+    for my $n ( 0 .. $#list ) {
+        $foo->{$n} = [ @{ $list[$n] } ];
     }
 
     return $foo->randpattern($pattern);
