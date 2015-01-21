@@ -117,7 +117,7 @@ our %regch = (
         my @tmp;
         while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne "]" ) ) {
             if ( ( $ch eq "-" ) && @{$chars} && @tmp ) {
-                my $begin_ch = $tmp[$#tmp];
+                my $begin_ch = $tmp[-1];
                 $ch = shift( @{$chars} );
                 my $key = "$begin_ch-$ch";
                 if ( defined( $parsed_range_patterns{$key} ) ) {
