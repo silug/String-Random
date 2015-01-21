@@ -202,12 +202,12 @@ our %regch = (
 );
 
 sub new {
-    my $proto = shift;
+    my ( $proto, @args ) = @_;
     my $class = ref($proto) || $proto;
     my $self;
     $self = {%old_patterns};    # makes $self refer to a copy of %old_patterns
     my %args = ();
-    %args = @_ if (@_);
+    %args = @args if (@args);
     if ( defined( $args{'max'} ) ) {
         $self->{'_max'} = $args{'max'};
     }
@@ -261,10 +261,10 @@ sub randregex {
 
 # For compatibility with an ancient version, please ignore...
 sub from_pattern {
-    my $self = shift;
+    my ( $self, @args ) = @_;
     croak "called without a reference" if ( !ref($self) );
 
-    return $self->randpattern(@_);
+    return $self->randpattern(@args);
 }
 
 sub randpattern {
@@ -292,8 +292,9 @@ sub randpattern {
 }
 
 sub random_regex {
+    my (@args) = @_;
     my $foo = new String::Random;
-    return $foo->randregex(@_);
+    return $foo->randregex(@args);
 }
 
 sub random_string {
