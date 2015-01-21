@@ -18,9 +18,8 @@ use strict;
 use warnings;
 
 use Carp;
-use Exporter ();
+use parent qw(Exporter);
 
-our @ISA         = qw(Exporter);
 our %EXPORT_TAGS = (
     'all' => [
         qw(
@@ -30,7 +29,6 @@ our %EXPORT_TAGS = (
     ]
 );
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our @EXPORT    = ();
 our $VERSION   = '0.26';
 
 # These are the various character sets.
