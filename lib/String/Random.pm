@@ -293,7 +293,7 @@ sub randpattern {
 
 sub random_regex {
     my (@args) = @_;
-    my $foo = new String::Random;
+    my $foo = String::Random->new;
     return $foo->randregex(@args);
 }
 
