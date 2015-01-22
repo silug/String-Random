@@ -157,7 +157,7 @@ my %regch = (
         my ( $self, $ch, $chars, $string ) = @_;
         my $closed;
     CLOSED:
-        for my $c (@$chars) {
+        for my $c (@{$chars}) {
             if ( $c eq "}" ) {
                 $closed = 1;
                 last CLOSED;
@@ -188,7 +188,7 @@ my %regch = (
             if ($tmp) {
                 my $prev_ch = $string->[-1];
 
-                push @$string, ( ($prev_ch) x ( $tmp - 1 ) );
+                push @{$string}, ( ($prev_ch) x ( $tmp - 1 ) );
             }
             else {
                 pop( @{$string} );
