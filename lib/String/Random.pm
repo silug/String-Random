@@ -35,10 +35,10 @@ our $VERSION   = '0.26';
 my @upper  = ( 'A' .. 'Z' );
 my @lower  = ( 'a' .. 'z' );
 my @digit  = ( '0' .. '9' );
-my @punct  = map { chr } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
+my @punct  = map {chr} ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
 my @any    = ( @upper, @lower, @digit, @punct );
 my @salt   = ( @upper, @lower, @digit, '.', '/' );
-my @binary = map { chr } ( 0 .. 255 );
+my @binary = map {chr} ( 0 .. 255 );
 
 # What's important is how they relate to the pattern characters.
 # These are the old patterns for randpattern/random_string.
@@ -60,8 +60,8 @@ my %patterns = (
     '\d' => [@digit],
     '\D' => [ @upper, @lower, @punct ],
     '\w' => [ @upper, @lower, @digit, '_' ],
-    '\W' => [ grep { $_ ne '_' } @punct ],
-    '\s' => [ q{ }, "\t" ],                   # Would anything else make sense?
+    '\W' => [ grep  { $_ ne '_' } @punct ],
+    '\s' => [ q{ }, "\t" ],                  # Would anything else make sense?
     '\S' => [ @upper, @lower, @digit, @punct ],
 
     # These are translated to their double quoted equivalents.
@@ -157,7 +157,7 @@ my %regch = (
         my ( $self, $ch, $chars, $string ) = @_;
         my $closed;
     CLOSED:
-        for my $c (@{$chars}) {
+        for my $c ( @{$chars} ) {
             if ( $c eq '}' ) {
                 $closed = 1;
                 last CLOSED;
