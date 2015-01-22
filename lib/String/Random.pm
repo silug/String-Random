@@ -224,7 +224,7 @@ sub new {
         $self->{'_rand'} = $args{'rand_gen'};
     }
     else {
-        $self->{'_rand'} = sub { _rand(@_) }
+        $self->{'_rand'} = \&_rand;
     }
     return bless( $self, $class );
 }
