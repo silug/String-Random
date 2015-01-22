@@ -35,10 +35,10 @@ our $VERSION   = '0.26';
 my @upper  = ( "A" .. "Z" );
 my @lower  = ( "a" .. "z" );
 my @digit  = ( "0" .. "9" );
-my @punct  = map { chr($_); } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
+my @punct  = map { chr } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
 my @any    = ( @upper, @lower, @digit, @punct );
 my @salt   = ( @upper, @lower, @digit, ".", "/" );
-my @binary = map { chr($_) } ( 0 .. 255 );
+my @binary = map { chr } ( 0 .. 255 );
 
 # What's important is how they relate to the pattern characters.
 # These are the old patterns for randpattern/random_string.
