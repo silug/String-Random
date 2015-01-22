@@ -143,15 +143,15 @@ my %regch = (
     },
     '*' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( q{}, "{0,}" ) );
+        unshift( @{$chars}, split( //, "{0,}" ) );
     },
     '+' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( q{}, "{1,}" ) );
+        unshift( @{$chars}, split( //, "{1,}" ) );
     },
     '?' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( q{}, "{0,1}" ) );
+        unshift( @{$chars}, split( //, "{0,1}" ) );
     },
     '{' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
