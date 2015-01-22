@@ -32,12 +32,12 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our $VERSION   = '0.26';
 
 # These are the various character sets.
-my @upper  = ( "A" .. "Z" );
-my @lower  = ( "a" .. "z" );
-my @digit  = ( "0" .. "9" );
+my @upper  = ( 'A' .. 'Z' );
+my @lower  = ( 'a' .. 'z' );
+my @digit  = ( '0' .. '9' );
 my @punct  = map { chr } ( 33 .. 47, 58 .. 64, 91 .. 96, 123 .. 126 );
 my @any    = ( @upper, @lower, @digit, @punct );
-my @salt   = ( @upper, @lower, @digit, ".", "/" );
+my @salt   = ( @upper, @lower, @digit, '.', '/' );
 my @binary = map { chr } ( 0 .. 255 );
 
 # What's important is how they relate to the pattern characters.
@@ -59,8 +59,8 @@ my %patterns = (
     '.'  => [@any],
     '\d' => [@digit],
     '\D' => [ @upper, @lower, @punct ],
-    '\w' => [ @upper, @lower, @digit, "_" ],
-    '\W' => [ grep { $_ ne "_" } @punct ],
+    '\w' => [ @upper, @lower, @digit, '_' ],
+    '\W' => [ grep { $_ ne '_' } @punct ],
     '\s' => [ q{ }, "\t" ],                   # Would anything else make sense?
     '\S' => [ @upper, @lower, @digit, @punct ],
 
@@ -78,11 +78,11 @@ my %parsed_range_patterns = ();
 
 # These characters are treated specially in randregex().
 my %regch = (
-    "\\" => sub {
+    '\\' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
         if ( @{$chars} ) {
             my $tmp = shift( @{$chars} );
-            if ( $tmp eq "x" ) {
+            if ( $tmp eq 'x' ) {
 
                 # This is supposed to be a number in hex, so
                 # there had better be at least 2 characters left.
@@ -90,7 +90,7 @@ my %regch = (
                 push( @{$string}, [ chr( hex($tmp) ) ] );
             }
             elsif ( $tmp =~ /[0-7]/ ) {
-                carp "octal parsing not implemented.  treating literally.";
+                carp 'octal parsing not implemented.  treating literally.';
                 push( @{$string}, [$tmp] );
             }
             elsif ( defined( $patterns{"\\$tmp"} ) ) {
@@ -105,7 +105,7 @@ my %regch = (
             }
         }
         else {
-            croak "regex not terminated";
+            croak 'regex not terminated';
         }
     },
     '.' => sub {
@@ -115,8 +115,8 @@ my %regch = (
     '[' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
         my @tmp;
-        while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne "]" ) ) {
-            if ( ( $ch eq "-" ) && @{$chars} && @tmp ) {
+        while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne ']' ) ) {
+            if ( ( $ch eq '-' ) && @{$chars} && @tmp ) {
                 my $begin_ch = $tmp[-1];
                 $ch = shift( @{$chars} );
                 my $key = "$begin_ch-$ch";
@@ -138,34 +138,34 @@ my %regch = (
                 push( @tmp, $ch );
             }
         }
-        croak "unmatched []" if ( $ch ne "]" );
+        croak 'unmatched []' if ( $ch ne ']' );
         push( @{$string}, \@tmp );
     },
     '*' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( //, "{0,}" ) );
+        unshift( @{$chars}, split( //, '{0,}' ) );
     },
     '+' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( //, "{1,}" ) );
+        unshift( @{$chars}, split( //, '{1,}' ) );
     },
     '?' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( //, "{0,1}" ) );
+        unshift( @{$chars}, split( //, '{0,1}' ) );
     },
     '{' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
         my $closed;
     CLOSED:
         for my $c (@{$chars}) {
-            if ( $c eq "}" ) {
+            if ( $c eq '}' ) {
                 $closed = 1;
                 last CLOSED;
             }
         }
         if ($closed) {
             my $tmp;
-            while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne "}" ) ) {
+            while ( defined( $ch = shift( @{$chars} ) ) && ( $ch ne '}' ) ) {
                 croak "'$ch' inside {} not supported" if ( $ch !~ /[\d,]/ );
                 $tmp .= $ch;
             }
@@ -221,7 +221,7 @@ sub new {
 # argument, or the strings concatenated when used in a scalar context.
 sub randregex {
     my $self = shift;
-    croak "called without a reference" if ( !ref($self) );
+    croak 'called without a reference' if ( !ref($self) );
 
     my @strings = ();
 
@@ -262,14 +262,14 @@ sub randregex {
 # For compatibility with an ancient version, please ignore...
 sub from_pattern {
     my ( $self, @args ) = @_;
-    croak "called without a reference" if ( !ref($self) );
+    croak 'called without a reference' if ( !ref($self) );
 
     return $self->randpattern(@args);
 }
 
 sub randpattern {
     my $self = shift;
-    croak "called without a reference" if ( !ref($self) );
+    croak 'called without a reference' if ( !ref($self) );
 
     my @strings = ();
 
