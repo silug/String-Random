@@ -1,0 +1,29 @@
+##
+## Do not use these
+# Don't worry about /s on regex
+[-RegularExpressions::RequireDotMatchAnything]
+# Don't worry about /m on regex
+[-RegularExpressions::RequireLineBoundaryMatching]
+# Don't worry about /x on regex
+[-RegularExpressions::RequireExtendedFormatting]
+# Don't worry about magic numbers
+[-ValuesAndExpressions::ProhibitMagicNumbers]
+# Don't worry about quotes and noisy strings
+[-ValuesAndExpressions::ProhibitNoisyQuotes]
+# Don't worry about #_ use
+[-BuiltinFunctions::ProhibitUselessTopic]
+# Don't worry about spelling
+[-Documentation::PodSpelling]
+# Disagree with this one
+[-CodeLayout::ProhibitParensWithBuiltins]
+# Don't worry about escaped meta chars
+[-RegularExpressions::ProhibitEscapedMetacharacters]
+# Don't worry about interpolating meta chars
+[-ValuesAndExpressions::RequireInterpolationOfMetachars]
+
+#
+[-Documentation::RequirePodSections]
+
+[Modules::ProhibitExcessMainComplexity]
+max_mccabe = 40
+
