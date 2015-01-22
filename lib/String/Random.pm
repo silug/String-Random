@@ -178,7 +178,7 @@ my %regch = (
                         $tmp = $min;
                     }
                     else {
-                        $tmp = $min + int( rand( $max - $min + 1 ) );
+                        $tmp = $min + $self->{'_rand'}( $max - $min + 1 );
                     }
                 }
                 else {
@@ -201,6 +201,12 @@ my %regch = (
     },
 );
 
+# Default rand function
+sub _rand {
+    my ($max) = @_;
+    return int rand $max;
+}
+
 sub new {
     my ( $proto, @args ) = @_;
     my $class = ref($proto) || $proto;
@@ -213,6 +219,12 @@ sub new {
     }
     else {
         $self->{'_max'} = 10;
+    }
+    if ( defined( $args{'rand_gen'} ) ) {
+        $self->{'_rand'} = $args{'rand_gen'};
+    }
+    else {
+        $self->{'_rand'} = sub { _rand(@_) }
     }
     return bless( $self, $class );
 }
@@ -250,7 +262,7 @@ sub randregex {
         }
 
         foreach my $ch (@string) {
-            $string .= $ch->[ int( rand( scalar( @{$ch} ) ) ) ];
+            $string .= $ch->[ $self->{'_rand'}( scalar( @{$ch} ) ) ];
         }
 
         push( @strings, $string );
@@ -279,7 +291,7 @@ sub randpattern {
         for my $ch ( split( //, $pattern ) ) {
             if ( defined( $self->{$ch} ) ) {
                 $string .= $self->{$ch}
-                    ->[ int( rand( scalar( @{ $self->{$ch} } ) ) ) ];
+                    ->[ $self->{'_rand'}( scalar( @{ $self->{$ch} } ) ) ];
             }
             else {
                 croak qq(Unknown pattern character "$ch"!);
@@ -396,11 +408,23 @@ for adding patterns.
 
 =item new max =E<gt> I<number>
 
+=item new rand_gen =E<gt> I<sub>
+
 Create a new String::Random object.
 
 Optionally a parameter C<max> can be included to specify the maximum number
 of characters to return for C<*> and other regular expression patterns that
 do not return a fixed number of characters.
+
+Optionally a parameter C<rand_gen> can be included to specify a subroutine
+coderef for generating the random numbers used in this module. The coderef
+must accept one argument C<max> and return an integer between 0 and C<max - 1>.
+The default rand_gen coderef is
+
+ sub {
+     my ($max) = @_;
+     return int rand $max;
+ }
 
 =item randpattern LIST
 
