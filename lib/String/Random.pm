@@ -61,7 +61,7 @@ my %patterns = (
     '\D' => [ @upper, @lower, @punct ],
     '\w' => [ @upper, @lower, @digit, "_" ],
     '\W' => [ grep { $_ ne "_" } @punct ],
-    '\s' => [ " ", "\t" ],                   # Would anything else make sense?
+    '\s' => [ q{ }, "\t" ],                   # Would anything else make sense?
     '\S' => [ @upper, @lower, @digit, @punct ],
 
     # These are translated to their double quoted equivalents.
@@ -143,15 +143,15 @@ my %regch = (
     },
     '*' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( "", "{0,}" ) );
+        unshift( @{$chars}, split( q{}, "{0,}" ) );
     },
     '+' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( "", "{1,}" ) );
+        unshift( @{$chars}, split( q{}, "{1,}" ) );
     },
     '?' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
-        unshift( @{$chars}, split( "", "{0,1}" ) );
+        unshift( @{$chars}, split( q{}, "{0,1}" ) );
     },
     '{' => sub {
         my ( $self, $ch, $chars, $string ) = @_;
@@ -228,7 +228,7 @@ sub randregex {
     while ( defined( my $pattern = shift ) ) {
         my $ch;
         my @string = ();
-        my $string = '';
+        my $string = q{};
 
         # Split the characters in the pattern
         # up into a list for easier parsing.
@@ -256,7 +256,7 @@ sub randregex {
         push( @strings, $string );
     }
 
-    return wantarray ? @strings : join( "", @strings );
+    return wantarray ? @strings : join( q{}, @strings );
 }
 
 # For compatibility with an ancient version, please ignore...
@@ -274,7 +274,7 @@ sub randpattern {
     my @strings = ();
 
     while ( defined( my $pattern = shift ) ) {
-        my $string = '';
+        my $string = q{};
 
         for my $ch ( split( //, $pattern ) ) {
             if ( defined( $self->{$ch} ) ) {
@@ -288,7 +288,7 @@ sub randpattern {
         push( @strings, $string );
     }
 
-    return wantarray ? @strings : join( "", @strings );
+    return wantarray ? @strings : join( q{}, @strings );
 }
 
 sub random_regex {
