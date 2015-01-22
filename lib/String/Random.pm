@@ -171,8 +171,8 @@ my %regch = (
             }
             if ( $tmp =~ /,/ ) {
                 if ( my ( $min, $max ) = $tmp =~ /^(\d*),(\d*)$/ ) {
-                    $min = 0 if ( !length($min) );
-                    $max = $self->{'_max'} if ( !length($max) );
+                    if ( !length($min) ) { $min = 0 }
+                    if ( !length($max) ) { $max = $self->{'_max'} }
                     croak "bad range {$tmp}" if ( $min > $max );
                     if ( $min == $max ) {
                         $tmp = $min;
@@ -207,7 +207,7 @@ sub new {
     my $self;
     $self = {%old_patterns};    # makes $self refer to a copy of %old_patterns
     my %args = ();
-    %args = @args if (@args);
+    if (@args) { %args = @args }
     if ( defined( $args{'max'} ) ) {
         $self->{'_max'} = $args{'max'};
     }
