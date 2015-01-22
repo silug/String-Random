@@ -1,9 +1,15 @@
 Revision history for Perl extension String::Random:
 
-0.27
+0.27    Thu Jan 22 2015
 - Cache parsed range patterns.
     - Pull Request from Kosuke Asami (co-me). Thanks!
         - https://github.com/shlomif/String-Random/pull/1
+- Clean up the code according to perlcritic.
+    - Pull Request from Lance Brown. Thanks!
+        - https://github.com/shlomif/String-Random/pull/2
+- Add rand_gen parameter to new to specify a custom random generator.
+    - Pull Request from Lance Brown. Thanks!
+        - https://github.com/shlomif/String-Random/pull/3
 
 0.26   Fri Jan 31 2014
 - LICENSE section and file (CPANTS).
