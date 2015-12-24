@@ -29,7 +29,7 @@ our %EXPORT_TAGS = (
     ]
 );
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-our $VERSION   = '0.28';
+our $VERSION   = '0.29';
 
 # These are the various character sets.
 my @upper  = ( 'A' .. 'Z' );

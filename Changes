@@ -1,5 +1,10 @@
 Revision history for Perl extension String::Random:
 
+0.29    2015-12-24
+     - Add a dependency on the 'parent' module:
+        - This caused some CPAN Testers failures on perl-5.8.x.
+            - http://www.cpantesters.org/cpan/report/d21f0078-6c11-1014-b233-6b3058476d35
+
 0.28    2015-01-22
      - Convert Changes to CPAN::Changes and add t/cpan-changes.t .
 
