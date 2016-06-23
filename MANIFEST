@@ -17,4 +17,5 @@ t/06_random_regex.t
 t/07_rand_gen.t
 t/cpan-changes.t
 t/pod.t
+t/pod-coverage.t
 t/style-trailing-space.t

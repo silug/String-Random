@@ -464,6 +464,10 @@ characters inside [] are not supported (with the exception of "-" to denote
 ranges of characters).  The parser doesn't care for spaces in the "regular
 expression" either.
 
+=item from_pattern
+
+B<IGNORE!> - for compatibility with an old version. B<DO NOT USE!>
+
 =back
 
 =head2 Functions
@@ -487,6 +491,11 @@ that can be passed is 10).  For example, the following code:
 would print something like this:
 
     cebd
+
+=item random_regex REGEX_IN_STRING
+
+Prints a string for the regular expression given as the string. See the
+synposis for example.
 
 =back
 
