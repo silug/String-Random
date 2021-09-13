@@ -302,6 +302,16 @@ sub randpattern {
     return wantarray ? @strings : join( q{}, @strings );
 }
 
+sub get_pattern {
+  my ( $self, $name ) = @_;
+  return $self->{ $name };
+}
+
+sub set_pattern {
+  my ( $self, $name, $charset ) = @_;
+  $self->{ $name } = $charset;
+}
+
 sub random_regex {
     my (@args) = @_;
     my $foo = String::Random->new;
@@ -400,6 +410,11 @@ I<or>
   my $gen = String::Random->new;
   $gen->{'A'} = [ @{$gen->{'C'}}, @{$gen->{'c'}} ];
 
+I<or>
+
+  my $gen = String::Random->new;
+  $gen->set_pattern(A => [ 'A'..'Z', 'a'..'z' ]);
+
 The random_string function, described below, has an alternative interface
 for adding patterns.
 
@@ -462,6 +477,20 @@ Regular expression support is still somewhat incomplete.  Currently special
 characters inside [] are not supported (with the exception of "-" to denote
 ranges of characters).  The parser doesn't care for spaces in the "regular
 expression" either.
+
+=item get_pattern STRING
+
+Return a pattern given a name.
+
+  my $gen = String::Random->new;
+  $gen->get_pattern('A');
+
+=item set_pattern STRING ARRAYREF
+
+Add or redefine a pattern given a name and a character set.
+
+  my $gen = String::Random->new;
+  $gen->set_pattern('A' => [ 'A'..'Z', 'a'..'z' ]);
 
 =item from_pattern
 
