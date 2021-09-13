@@ -483,14 +483,14 @@ expression" either.
 Return a pattern given a name.
 
   my $gen = String::Random->new;
-  $gen->get_pattern('A');
+  $gen->get_pattern('C');
 
 =item set_pattern STRING ARRAYREF
 
 Add or redefine a pattern given a name and a character set.
 
   my $gen = String::Random->new;
-  $gen->set_pattern('A' => [ 'A'..'Z', 'a'..'z' ]);
+  $gen->set_pattern(A => [ 'A'..'Z', 'a'..'z' ]);
 
 =item from_pattern
 
